@@ -3,12 +3,7 @@ const qrcode = require('qrcode-terminal');
 const cron = require('node-cron');
 const fs = require('fs');
 
-const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
-const cron = require('node-cron');
-const fs = require('fs');
-
-// CONFIGURACIÓN DEL CLIENTE (compatible con Railway)
+// CONFIGURACIÓN DEL CLIENTE
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -32,7 +27,7 @@ client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
 });
 
-// CUANDO EL BOT ESTÁ LISTO
+// BOT LISTO
 client.on('ready', async () => {
     console.log('✅ Bot conectado');
 
@@ -45,12 +40,12 @@ client.on('ready', async () => {
     }
 });
 
-// DETECTAR DESCONEXIÓN
+// DESCONEXIÓN
 client.on('disconnected', (reason) => {
     console.log('❌ Bot desconectado:', reason);
 });
 
-// MANEJO DE ERRORES GLOBALES
+// ERRORES
 process.on('unhandledRejection', err => {
     console.error('❌ Error no manejado:', err);
 });
@@ -59,7 +54,7 @@ process.on('uncaughtException', err => {
     console.error('❌ Excepción no capturada:', err);
 });
 
-// FUNCIÓN PRINCIPAL
+// FUNCIÓN PAGOS
 function verificarPagos() {
     try {
         const servicios = JSON.parse(fs.readFileSync('./servicios.json'));
@@ -95,11 +90,11 @@ function verificarPagos() {
     }
 }
 
-// CRON → todos los días a las 7:45 PM
+// CRON
 cron.schedule('45 19 * * *', () => {
     console.log('⏰ Revisando pagos...');
     verificarPagos();
 });
 
-// INICIAR BOT
+// INICIAR
 client.initialize();
