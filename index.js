@@ -10,7 +10,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        protocolTimeout: 180000, // 🔥 CLAVE: evita timeout
+        protocolTimeout: 240000, // 🔥 MÁS TIEMPO (4 min)
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 // ================================
-// 📱 QR DE CONEXIÓN
+// 📱 QR (solo si es necesario)
 // ================================
 client.on('qr', qr => {
     console.log('📱 Escanea este QR con tu WhatsApp');
@@ -30,7 +30,7 @@ client.on('qr', qr => {
 });
 
 // ================================
-// ✅ BOT LISTO
+// 🔥 BOT LISTO
 // ================================
 client.on('ready', async () => {
     console.log('✅ Bot conectado');
@@ -38,10 +38,15 @@ client.on('ready', async () => {
     const grupo = '120363300096178455@g.us';
 
     try {
-        // 🔥 Espera estabilidad en Railway
-        await new Promise(r => setTimeout(r, 30000));
+        console.log('⏳ Esperando estabilización de WhatsApp Web...');
+
+        // 🔥 CLAVE PARA RAILWAY (evita errores de carga)
+        await new Promise(r => setTimeout(r, 60000)); // 60 segundos
+
+        console.log('📤 Enviando mensaje inicial...');
 
         await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
+
         console.log('📨 Mensaje inicial enviado');
 
     } catch (error) {
@@ -57,7 +62,7 @@ client.on('disconnected', (reason) => {
 });
 
 // ================================
-// ❌ FALLA AUTENTICACIÓN
+// ❌ ERROR DE AUTENTICACIÓN
 // ================================
 client.on('auth_failure', msg => {
     console.error('❌ Fallo de autenticación:', msg);
@@ -108,7 +113,6 @@ function verificarPagos() {
             client.sendMessage(grupo, mensaje)
                 .then(() => console.log('📢 Recordatorio enviado'))
                 .catch(err => console.error('❌ Error enviando mensaje:', err));
-
         } else {
             console.log('ℹ️ No hay pagos hoy');
         }
@@ -119,7 +123,7 @@ function verificarPagos() {
 }
 
 // ================================
-// ⏰ CRON DIARIO (7:45 PM)
+// ⏰ CRON (7:45 PM TODOS LOS DÍAS)
 // ================================
 cron.schedule('45 19 * * *', () => {
     console.log('⏰ Ejecutando recordatorio...');
@@ -127,6 +131,6 @@ cron.schedule('45 19 * * *', () => {
 });
 
 // ================================
-// 🚀 INICIAR BOT
+// 🚀 INICIO DEL BOT
 // ================================
 client.initialize();
