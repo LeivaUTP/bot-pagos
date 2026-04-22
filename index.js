@@ -3,7 +3,7 @@ const qrcode = require('qrcode-terminal');
 const cron = require('node-cron');
 const fs = require('fs');
 
-// CONFIGURACIÓN DEL CLIENTE (para Railway)
+// CONFIGURACIÓN DEL CLIENTE (OPTIMIZADO PARA RAILWAY)
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -12,10 +12,6 @@ const client = new Client({
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
             '--disable-gpu'
         ]
     }
@@ -33,15 +29,22 @@ client.on('ready', async () => {
 
     const grupo = '120363300096178455@g.us';
 
-    // ⏳ Esperar 10 segundos para evitar errores de Chromium
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    // Espera para asegurar que WhatsApp cargue bien
+    setTimeout(async () => {
+        try {
+            await client.getChats(); // fuerza carga completa
 
-    try {
-        await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
-        console.log('📨 Mensaje enviado correctamente');
-    } catch (error) {
-        console.error('❌ Error al enviar mensaje inicial:', error);
-    }
+            if (client.info) {
+                await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
+                console.log('📨 Mensaje enviado correctamente');
+            } else {
+                console.log('⚠️ Cliente aún no listo');
+            }
+
+        } catch (error) {
+            console.error('❌ Error al enviar mensaje inicial:', error);
+        }
+    }, 15000); // 15 segundos
 });
 
 // DETECTAR DESCONEXIÓN
@@ -84,10 +87,12 @@ function verificarPagos() {
             }
         });
 
-        if (hay) {
+        if (hay && client.info) {
             const grupo = '120363300096178455@g.us';
             client.sendMessage(grupo, mensaje);
             console.log('📢 Recordatorio enviado');
+        } else {
+            console.log('ℹ️ No hay pagos o cliente no listo');
         }
 
     } catch (error) {
@@ -97,7 +102,7 @@ function verificarPagos() {
 
 // CRON → todos los días a las 7:45 PM
 cron.schedule('45 19 * * *', () => {
-    console.log('⏰ Revisando pagos...');
+    console.log('⏰ Ejecutando recordatorio...');
     verificarPagos();
 });
 

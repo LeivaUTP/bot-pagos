@@ -1,15 +1,13 @@
 {
   "name": "bot-pagos",
   "version": "1.0.0",
-  "description": "",
+  "description": "Bot de recordatorio de pagos por WhatsApp",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "LeivaUTP",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "node-cron": "^4.2.1",
     "puppeteer": "^24.42.0",
