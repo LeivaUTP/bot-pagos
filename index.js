@@ -3,7 +3,7 @@ const qrcode = require('qrcode-terminal');
 const cron = require('node-cron');
 const fs = require('fs');
 
-// CONFIGURACIÓN DEL CLIENTE
+// CONFIGURACIÓN DEL CLIENTE (para Railway)
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -27,25 +27,29 @@ client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
 });
 
-// BOT LISTO
+// CUANDO EL BOT ESTÁ LISTO
 client.on('ready', async () => {
     console.log('✅ Bot conectado');
 
     const grupo = '120363300096178455@g.us';
 
+    // ⏳ Esperar 10 segundos para evitar errores de Chromium
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
     try {
         await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
+        console.log('📨 Mensaje enviado correctamente');
     } catch (error) {
-        console.error('Error al enviar mensaje inicial:', error);
+        console.error('❌ Error al enviar mensaje inicial:', error);
     }
 });
 
-// DESCONEXIÓN
+// DETECTAR DESCONEXIÓN
 client.on('disconnected', (reason) => {
     console.log('❌ Bot desconectado:', reason);
 });
 
-// ERRORES
+// MANEJO DE ERRORES GLOBALES
 process.on('unhandledRejection', err => {
     console.error('❌ Error no manejado:', err);
 });
@@ -54,7 +58,7 @@ process.on('uncaughtException', err => {
     console.error('❌ Excepción no capturada:', err);
 });
 
-// FUNCIÓN PAGOS
+// FUNCIÓN PRINCIPAL DE PAGOS
 function verificarPagos() {
     try {
         const servicios = JSON.parse(fs.readFileSync('./servicios.json'));
@@ -83,18 +87,19 @@ function verificarPagos() {
         if (hay) {
             const grupo = '120363300096178455@g.us';
             client.sendMessage(grupo, mensaje);
+            console.log('📢 Recordatorio enviado');
         }
 
     } catch (error) {
-        console.error('Error en verificarPagos:', error);
+        console.error('❌ Error en verificarPagos:', error);
     }
 }
 
-// CRON
+// CRON → todos los días a las 7:45 PM
 cron.schedule('45 19 * * *', () => {
     console.log('⏰ Revisando pagos...');
     verificarPagos();
 });
 
-// INICIAR
+// INICIAR BOT
 client.initialize();
