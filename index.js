@@ -24,32 +24,30 @@ client.on('qr', qr => {
 });
 
 // CUANDO EL BOT ESTÁ LISTO
-client.on('ready', async () => {
+client.on('ready', () => {
     console.log('✅ Bot conectado');
 
     const grupo = '120363300096178455@g.us';
 
-    // Espera para asegurar que WhatsApp cargue bien
+    // Espera para evitar errores de carga en Railway
     setTimeout(async () => {
         try {
-            await client.getChats(); // fuerza carga completa
-
-            if (client.info) {
-                await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
-                console.log('📨 Mensaje enviado correctamente');
-            } else {
-                console.log('⚠️ Cliente aún no listo');
-            }
-
+            await client.sendMessage(grupo, '✅ Bot funcionando correctamente');
+            console.log('📨 Mensaje enviado correctamente');
         } catch (error) {
-            console.error('❌ Error al enviar mensaje inicial:', error);
+            console.error('❌ Error al enviar mensaje:', error);
         }
-    }, 15000); // 15 segundos
+    }, 20000); // 20 segundos (estable en la nube)
 });
 
 // DETECTAR DESCONEXIÓN
 client.on('disconnected', (reason) => {
     console.log('❌ Bot desconectado:', reason);
+});
+
+// ERROR DE AUTENTICACIÓN
+client.on('auth_failure', msg => {
+    console.error('❌ Fallo de autenticación:', msg);
 });
 
 // MANEJO DE ERRORES GLOBALES
@@ -87,12 +85,12 @@ function verificarPagos() {
             }
         });
 
-        if (hay && client.info) {
+        if (hay) {
             const grupo = '120363300096178455@g.us';
             client.sendMessage(grupo, mensaje);
             console.log('📢 Recordatorio enviado');
         } else {
-            console.log('ℹ️ No hay pagos o cliente no listo');
+            console.log('ℹ️ No hay pagos hoy');
         }
 
     } catch (error) {
